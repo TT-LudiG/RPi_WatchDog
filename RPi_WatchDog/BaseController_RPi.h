@@ -10,8 +10,6 @@
 
 #define DELAY_KICKER_LOOP_IN_SEC 5
 
-#define DIRECTORY_CHECK_INTERVAL_IN_SEC 30
-
 class BaseController_RPi
 {
 private:
