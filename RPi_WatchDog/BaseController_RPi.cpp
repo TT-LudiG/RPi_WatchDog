@@ -129,7 +129,7 @@ void BaseController_RPi::kickWatchDogLoop(void)
     
     while (!_isDone)
     {
-        if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start).count() < _directoryCheckIntervalInSec)
+        if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start).count() > _directoryCheckIntervalInSec)
         {
             if ((!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/Network")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/Bluetooth")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/GSM")))
                 isEmpty = false;
