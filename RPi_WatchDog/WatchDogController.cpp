@@ -1,16 +1,22 @@
+#include <cstring>
+
 #include <fcntl.h>
 #include <linux/watchdog.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 #include "WatchDogController.h"
+#include "WatchDogExceptions.h"
 
-WatchDogController::WatchDogController(const std::string devicePath)
+WatchDogController::WatchDogController(const std::string ttyDevice)
 {
-    if ((_deviceHandle = open("//dev/watchdog", O_RDWR | O_NOCTTY)) < 0)
+    _deviceHandle = open(ttyDevice.c_str(), O_RDWR | O_NOCTTY);
+    
+    if (_deviceHandle < 0)
     {
-        // Throw exception.
-    } 
+        WatchDogExceptions::TerminalOpenException e(std::string(std::strerror(errno)));
+        throw e;
+    }
 }
 
 void WatchDogController::kick(void) const

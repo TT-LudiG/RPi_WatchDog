@@ -86,6 +86,7 @@
     <ClInclude Include="UARTController.h" />
     <ClInclude Include="UARTExceptions.h" />
     <ClInclude Include="WatchDogController.h" />
+    <ClInclude Include="WatchDogExceptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
