@@ -20,6 +20,8 @@ BaseController_RPi::BaseController_RPi(const std::string servername, const std::
     _gsmControllerPtr = nullptr;
     _watchDogControllerPtr = nullptr;
     
+    logToFileWithSubdirectory("Boot");
+    
     try
     {
 		_watchDogControllerPtr = new WatchDogController("//dev/watchdog");
@@ -27,7 +29,7 @@ BaseController_RPi::BaseController_RPi(const std::string servername, const std::
     
     catch (const std::exception& e)
     {
-        logToFileWithSubdirectory(e, "WatchDog");
+        logToFileWithSubdirectory(e.what(), "WatchDog");
         
         throw e;
     }
@@ -229,15 +231,43 @@ void BaseController_RPi::emptyDirectory(const std::string directoryName) const
     }
 }
 
-void BaseController_RPi::logToFileWithSubdirectory(const std::exception& e, std::string subdirectoryName) const
+void BaseController_RPi::logToFileWithSubdirectory(std::string subdirectoryName) const
 {
     std::stringstream fileLogNameStream;
         
-    fileLogNameStream << "//home/pi/LOGS/WatchDog/" << subdirectoryName;
+    fileLogNameStream << "//home/pi/LOGS/RPi_WatchDog/" << subdirectoryName;
     
     umask(0);
     mkdir("//home/pi/LOGS", 0755);
-    mkdir("//home/pi/LOGS/WatchDog", 0755);
+    mkdir("//home/pi/LOGS/RPi_WatchDog", 0755);
+    mkdir(fileLogNameStream.str().c_str(), 0755);
+    
+    time_t timeRaw;
+            
+    std::time(&timeRaw);
+            
+    struct tm timeInfo = *std::localtime(&timeRaw);
+            
+    char time[20];
+            
+    std::strftime(time, 20, "%F_%T", &timeInfo);
+        
+    fileLogNameStream << "/" << time << ".log";
+        
+    std::ofstream fileLog(fileLogNameStream.str());
+        
+    fileLog.close();
+}
+
+void BaseController_RPi::logToFileWithSubdirectory(const std::string logBody, std::string subdirectoryName) const
+{
+    std::stringstream fileLogNameStream;
+        
+    fileLogNameStream << "//home/pi/LOGS/RPi_WatchDog/" << subdirectoryName;
+    
+    umask(0);
+    mkdir("//home/pi/LOGS", 0755);
+    mkdir("//home/pi/LOGS/RPi_WatchDog", 0755);
     mkdir(fileLogNameStream.str().c_str(), 0755);
     
     time_t timeRaw;
@@ -255,7 +285,7 @@ void BaseController_RPi::logToFileWithSubdirectory(const std::exception& e, std:
     std::ofstream fileLog(fileLogNameStream.str());
     
     if (fileLog.is_open())
-        fileLog << e.what() << std::endl;
+        fileLog << logBody << std::endl;
         
     fileLog.close();
 }

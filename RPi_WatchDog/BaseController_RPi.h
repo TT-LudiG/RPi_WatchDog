@@ -31,7 +31,8 @@ private:
     
     void emptyDirectory(const std::string directoryName) const;
     
-    void logToFileWithSubdirectory(const std::exception& e, const std::string directoryName) const;
+    void logToFileWithSubdirectory(const std::string directoryName) const;
+    void logToFileWithSubdirectory(const std::string logBody, const std::string directoryName) const;
     
 public:
     BaseController_RPi(const std::string servername, const std::string username, const std::string password, const unsigned long int directoryCheckIntervalInSec);

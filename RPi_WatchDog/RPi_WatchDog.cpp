@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     }
     
     catch (const std::exception& e)
-    {      
+    {
         if (baseControllerPtr != nullptr)
             delete baseControllerPtr;
         
