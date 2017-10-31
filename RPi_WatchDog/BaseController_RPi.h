@@ -13,7 +13,6 @@
 class BaseController_RPi
 {
 private:
-    GSMController* _gsmControllerPtr;
     WatchDogController* _watchDogControllerPtr;
     
     const unsigned long int _directoryCheckIntervalInSec;
@@ -35,7 +34,7 @@ private:
     void logToFileWithSubdirectory(const std::string logBody, const std::string directoryName) const;
     
 public:
-    BaseController_RPi(const std::string servername, const std::string username, const std::string password, const unsigned long int directoryCheckIntervalInSec);
+    BaseController_RPi(const unsigned long int directoryCheckIntervalInSec);
     ~BaseController_RPi(void);
     
     void monitorKickerThread(void);

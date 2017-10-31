@@ -4,18 +4,10 @@
 
 #include "BaseController_RPi.h"
 
-#define SERVERNAME "41.185.23.172"
-#define USERNAME "RPi-Dev"
-#define PASSWORD "jacoistehbaws0YEAH!"
-
 #define DIRECTORY_CHECK_INTERVAL_IN_SEC 60
 
 int main(int argc, char *argv[])
 {
-    std::string servername = SERVERNAME;
-    std::string username = USERNAME;
-    std::string password = PASSWORD;
-    
     unsigned long int directoryCheckIntervalInSec = DIRECTORY_CHECK_INTERVAL_IN_SEC;
     
     std::string currentParam;
@@ -34,56 +26,15 @@ int main(int argc, char *argv[])
                 continue;
             }
             
-            if (currentParam == "-s")
-            {
-                try
-                {
-                    servername = std::string(argv[i + 1]);
-                }
-                
-                catch (...)
-                {
-                    servername = SERVERNAME;
-                }
-            }
+            std::size_t indexEqualsChar = currentParam.find('=');
             
-            else if (currentParam == "-u")
+            if (indexEqualsChar != std::string::npos)
             {
-                try
-                {
-                    username = std::string(argv[i + 1]);
-                }
-                
-                catch (...)
-                {
-                    username = USERNAME;
-                }
-            }
-            
-            else if (currentParam == "-p")
-            {
-                try
-                {
-                    password = std::string(argv[i + 1]);
-                }
-                
-                catch (...)
-                {
-                    password = PASSWORD;
-                }
-            }
-            
-            else if (currentParam == "-t")
-            {             
-                try
-                {
-                    directoryCheckIntervalInSec = std::stoul(std::string(argv[i + 1]));
-                }
-                
-                catch (...)
-                {
-                    directoryCheckIntervalInSec = DIRECTORY_CHECK_INTERVAL_IN_SEC;
-                }
+                std::string token = currentParam.substr(0, indexEqualsChar);
+                std::string value = currentParam.substr(indexEqualsChar + 1);
+
+                if (token == "-directory_check_interval_in_sec")
+                    directoryCheckIntervalInSec = std::stoul(value);
             }
         }
     }
@@ -92,7 +43,7 @@ int main(int argc, char *argv[])
     
     try
     {
-        baseControllerPtr = new BaseController_RPi(servername, username, password, directoryCheckIntervalInSec);
+        baseControllerPtr = new BaseController_RPi(directoryCheckIntervalInSec);
     }
     
     catch (const std::exception& e)

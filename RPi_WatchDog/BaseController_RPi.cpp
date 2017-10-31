@@ -14,10 +14,9 @@
 
 #include "BaseController_RPi.h"
 
-BaseController_RPi::BaseController_RPi(const std::string servername, const std::string username, const std::string password, const unsigned long int directoryCheckIntervalInSec):
+BaseController_RPi::BaseController_RPi(const unsigned long int directoryCheckIntervalInSec):
     _directoryCheckIntervalInSec(directoryCheckIntervalInSec)
 {
-    _gsmControllerPtr = nullptr;
     _watchDogControllerPtr = nullptr;
     
     logToFileWithSubdirectory("Boot");
@@ -34,43 +33,13 @@ BaseController_RPi::BaseController_RPi(const std::string servername, const std::
         throw e;
     }
     
-//    try
-//    {
-//        _gsmControllerPtr = new GSMController();
-//    }
-//    
-//    catch (const std::exception& e)
-//    {
-//        logToFileWithDirectory(e, "WatchDog/Logs/GSM");
-//        
-//        throw e;
-//    }
-//    
-//    while (true)
-//    {
-//        try
-//        {
-//            _gsmControllerPtr->initialiseGPRS();
-//            
-//            break;
-//        }
-//    
-//        catch (const std::exception&)
-//        {
-//            _gsmControllerPtr->initialiseGSM();
-//        }
-//    }
-    
     _isReady = false;
     _isWaiting = false;
     _hasWoken = false;
 }
 
 BaseController_RPi::~BaseController_RPi()
-{
-    if (_gsmControllerPtr != nullptr)
-        delete _gsmControllerPtr;
-    
+{  
     if (_watchDogControllerPtr != nullptr)
         delete _watchDogControllerPtr;
 }
@@ -121,6 +90,10 @@ void BaseController_RPi::kickWatchDogLoop(void)
     
     lock.unlock();
     
+    emptyDirectory("//home/pi/LOGS/RPi_Updater/Network");
+    emptyDirectory("//home/pi/LOGS/RPi_Updater/FTP");
+    emptyDirectory("//home/pi/LOGS/RPi_Updater/Base");
+    
     emptyDirectory("//home/pi/LOGS/RPi_BLE_Scanner/Network");
     emptyDirectory("//home/pi/LOGS/RPi_BLE_Scanner/Bluetooth");
     emptyDirectory("//home/pi/LOGS/RPi_BLE_Scanner/GSM");
@@ -133,7 +106,10 @@ void BaseController_RPi::kickWatchDogLoop(void)
     {
         if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start).count() > _directoryCheckIntervalInSec)
         {
-            if ((!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/Network")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/Bluetooth")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/GSM")))
+            if ((!isDirectoryEmpty("//home/pi/LOGS/RPi_Updater/Network")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_Updater/FTP")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_Updater/Base")))
+                isEmpty = false;
+            
+            else if ((!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/Network")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/Bluetooth")) || (!isDirectoryEmpty("//home/pi/LOGS/RPi_BLE_Scanner/GSM")))
                 isEmpty = false;
             
             start = std::chrono::steady_clock::now();
@@ -172,11 +148,11 @@ bool BaseController_RPi::getFinalised(void) const
     return _isDone;
 }
 
-bool BaseController_RPi::isDirectoryEmpty(const std::string directoryName) const
+bool BaseController_RPi::isDirectoryEmpty(const std::string directoryPath) const
 {
     bool isEmpty = true;
     
-    DIR* directoryPtr = opendir(directoryName.c_str());
+    DIR* directoryPtr = opendir(directoryPath.c_str());
     
     if (directoryPtr != nullptr)
     {      
@@ -205,9 +181,9 @@ bool BaseController_RPi::isDirectoryEmpty(const std::string directoryName) const
     return true;
 }
 
-void BaseController_RPi::emptyDirectory(const std::string directoryName) const
+void BaseController_RPi::emptyDirectory(const std::string directoryPath) const
 {
-    DIR* directoryPtr = opendir(directoryName.c_str());
+    DIR* directoryPtr = opendir(directoryPath.c_str());
     
     if (directoryPtr != nullptr)
     {    
@@ -219,7 +195,7 @@ void BaseController_RPi::emptyDirectory(const std::string directoryName) const
             
             if ((fileName != ".") && (fileName != ".."))
             {
-                std::string filePath = directoryName + "/" + fileName;
+                std::string filePath = directoryPath + "/" + fileName;
                 
                 remove(filePath.c_str());
             }
@@ -259,7 +235,7 @@ void BaseController_RPi::logToFileWithSubdirectory(std::string subdirectoryName)
     fileLog.close();
 }
 
-void BaseController_RPi::logToFileWithSubdirectory(const std::string logBody, std::string subdirectoryName) const
+void BaseController_RPi::logToFileWithSubdirectory(const std::string message, std::string subdirectoryName) const
 {
     std::stringstream fileLogNameStream;
         
@@ -285,7 +261,7 @@ void BaseController_RPi::logToFileWithSubdirectory(const std::string logBody, st
     std::ofstream fileLog(fileLogNameStream.str());
     
     if (fileLog.is_open())
-        fileLog << logBody << std::endl;
+        fileLog << message << std::endl;
         
     fileLog.close();
 }
